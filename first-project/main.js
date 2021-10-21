@@ -1,3 +1,102 @@
+var eventBus = new Vue();
+
+Vue.component("info-tabs", {
+  props: {
+    shipping: {
+      required: true,
+    },
+    details: {
+      type: Array,
+      required: true,
+    },
+    sizes: {
+      type: Array,
+      required: true,
+    },
+  },
+  template: `
+    <div>
+    <div>
+      <span
+        v-for="(tab, index) in tabs"
+        :class="{ activeTab: selectedTab === tab }"
+        :key="index"
+        @click="selectedTab = tab"
+      >
+        {{ tab }}
+      </span>
+    </div>
+
+    
+    <div v-show="selectedTab === 'Shipping'">
+      <p>Shipping: {{ shipping }}</p>
+    </div>
+
+    <div  v-show="selectedTab === 'Details'">
+      <ul>
+        <li v-for="detail in details">{{ detail }}</li>
+      </ul>
+
+      <ul>
+        <li v-for="size in sizes">{{size}}</li>
+      </ul>
+    </div>
+
+    
+
+    </div>  
+  `,
+  data() {
+    return {
+      tabs: ["Shipping", "Details"],
+      selectedTab: "Shipping",
+    };
+  },
+});
+
+Vue.component("product-tabs", {
+  props: {
+    reviews: [],
+    required: true,
+  },
+  template: `
+    <div>
+      <div>
+        <span 
+          v-for="(tab, index ) in tabs" 
+          :class="{ activeTab: selectedTab === tab }"
+          :key="index"
+          @click="selectedTab = tab"
+        >
+          {{ tab }}
+        </span>
+      </div>
+
+      <div v-show="selectedTab === 'Reviews'">
+        <h2>Reviews</h2>
+        <p v-show="!reviews.length">There are no reviews yet.</p>
+
+        <ul>
+          <li v-for="review in reviews">
+            <p>{{ review.name }}</p>
+            <p>Rating: {{ review.rating }}</p>
+            <p>{{ review.review }}</p>
+            <p>Recommended: {{ review.recommendation }}</p>
+          </li>
+        </ul>
+      </div>
+
+      <product-reviews v-show="selectedTab === 'Make a Review'"></product-reviews>
+    </div>
+  `,
+  data() {
+    return {
+      tabs: ["Reviews", "Make a Review"],
+      selectedTab: "Reviews",
+    };
+  },
+});
+
 Vue.component("product-reviews", {
   template: `
     <form class="review-form" @submit.prevent="handleSubmit">
@@ -70,7 +169,7 @@ Vue.component("product-reviews", {
           recommendation: this.recommendation,
         };
 
-        this.$emit("review-submitted", productReview);
+        eventBus.$emit("review-submitted", productReview);
 
         this.name = null;
         this.review = null;
@@ -95,9 +194,7 @@ Vue.component("product-details", {
     },
   },
   template: `
-    <ul>
-      <li v-for="detail in details">{{ detail }}</li>
-    </ul>
+    
   `,
   data() {
     return {};
@@ -130,13 +227,8 @@ Vue.component("product", {
         <p v-if="inStock">In Stock</p>
         <p v-else :class="{ outOfStock: !inStock }">Out of Stock</p>
         <span>{{ sale }}</span>
-        <p>Shipping: {{ shipping }}</p>
 
-        <product-details :details="details"></product-details>
-
-        <ul>
-          <li v-for="size in sizes">{{size}}</li>
-        </ul>
+        <info-tabs :shipping="shipping" :details="details" :sizes="sizes"></info-tabs>
 
         <div class="container">
           <div
@@ -161,21 +253,8 @@ Vue.component("product", {
         </button>
       </div>
 
-      <div>
-        <h2>Reviews</h2>
-        <p v-show="!reviews.length">There are no reviews yet.</p>
+      <product-tabs :reviews="reviews"></product-tabs>
 
-        <ul>
-          <li v-for="review in reviews">
-            <p>{{ review.name }}</p>
-            <p>Rating: {{ review.rating }}</p>
-            <p>{{ review.review }}</p>
-            <p>Recommended: {{ review.recommendation }}</p>
-          </li>
-        </ul>
-      </div>
-
-      <product-reviews @review-submitted="addReview"></product-reviews>
     </div>
   `,
   data() {
@@ -233,9 +312,6 @@ Vue.component("product", {
     updateProductImage(index) {
       this.selectedVariant = index;
     },
-    addReview(productReview) {
-      this.reviews.push(productReview);
-    },
   },
   computed: {
     title() {
@@ -261,6 +337,11 @@ Vue.component("product", {
         return 2.99;
       }
     },
+  },
+  mounted() {
+    eventBus.$on("review-submitted", (productReview) => {
+      this.reviews.push(productReview);
+    });
   },
 });
 
