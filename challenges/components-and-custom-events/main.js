@@ -1,111 +1,3 @@
-Vue.component("product-reviews", {
-  template: `
-    <form class="review-form" @submit.prevent="handleSubmit">
-    <p>
-      <strong>Please correct the following error(s):</strong>
-      <ul>
-      <li v-for="error in errors">{{ error }}</li>
-      </ul>
-    </p>
-
-      <p>
-        <label for="name">Name:</label>
-        <input id="name" v-model="name" placeholder="Type your name" />
-      </p>
-
-      <p>
-        <label for="name">Review:</label>
-        <textarea id="name" v-model="review"></textarea>
-      </p>
-
-      <p>
-        <label for="name">Rating:</label>
-        <select id="rating" v-model.number="rating">
-          <option>5</option>
-          <option>4</option>
-          <option>3</option>
-          <option>2</option>
-          <option>1</option>
-        </select>
-      </p>
-      
-      <p>
-        <p>Would you recommend this product?</p>
-        
-        <div class="container">
-          
-            <input type="radio" id="positiveRecommendation" name="recommendation" v-model="recommendation" value="true">
-            <label for="positiveRecommendation">Yes</label>
-          
-          
-          
-            <input type="radio" id="negativeRecommendation" name="recommendation" v-model="recommendation" value="false">
-            <label for="negativeRecommendation">No</label>
-          
-        </div>
-      </p>
-
-      <p>
-        <input type="submit" value="Submit">
-      </p>
-    </form>
-  `,
-  data() {
-    return {
-      name: null,
-      review: null,
-      rating: null,
-      recommendation: null,
-      errors: [],
-    };
-  },
-  methods: {
-    handleSubmit() {
-      this.errors = [];
-      if (this.name && this.review && this.rating && this.recommendation) {
-        let productReview = {
-          name: this.name,
-          review: this.review,
-          rating: this.rating,
-          recommendation: this.recommendation,
-        };
-
-        this.$emit("review-submitted", productReview);
-
-        this.name = null;
-        this.review = null;
-        this.rating = null;
-        this.recommendation = null;
-      } else {
-        if (!this.name) this.errors.push("Name required.");
-        if (!this.review) this.errors.push("Review required.");
-        if (!this.rating) this.errors.push("Rating required.");
-        if (!this.recommendation)
-          this.errors.push("Recommendation question is required.");
-      }
-    },
-  },
-});
-
-Vue.component("product-details", {
-  props: {
-    details: {
-      type: Array,
-      required: true,
-    },
-  },
-  template: `
-    <ul>
-      <li v-for="detail in details">{{ detail }}</li>
-    </ul>
-  `,
-  data() {
-    return {};
-  },
-  methods: {},
-  computed: {},
-});
-
 Vue.component("product", {
   props: {
     premium: {
@@ -138,7 +30,7 @@ Vue.component("product", {
           <li v-for="size in sizes">{{size}}</li>
         </ul>
 
-        <div class="container">
+        <div class="color-variant-container">
           <div
             class="color-box"
             v-for="(variant, index) in variants"
@@ -159,23 +51,11 @@ Vue.component("product", {
         <button class="alternative" v-on:click="removeFromCart">
           Remove (-1)
         </button>
+
+        
       </div>
 
-      <div>
-        <h2>Reviews</h2>
-        <p v-show="!reviews.length">There are no reviews yet.</p>
-
-        <ul>
-          <li v-for="review in reviews">
-            <p>{{ review.name }}</p>
-            <p>Rating: {{ review.rating }}</p>
-            <p>{{ review.review }}</p>
-            <p>Recommended: {{ review.recommendation }}</p>
-          </li>
-        </ul>
-      </div>
-
-      <product-reviews @review-submitted="addReview"></product-reviews>
+      <a :href="url">Details</a>
     </div>
   `,
   data() {
@@ -202,7 +82,6 @@ Vue.component("product", {
         },
       ],
       sizes: ["Small", "Medium", "Large"],
-      reviews: [],
     };
   },
   methods: {
@@ -233,9 +112,6 @@ Vue.component("product", {
     updateProductImage(index) {
       this.selectedVariant = index;
     },
-    addReview(productReview) {
-      this.reviews.push(productReview);
-    },
   },
   computed: {
     title() {
@@ -262,6 +138,25 @@ Vue.component("product", {
       }
     },
   },
+});
+
+Vue.component("product-details", {
+  props: {
+    details: {
+      type: Array,
+      required: true,
+    },
+  },
+  template: `
+    <ul>
+      <li v-for="detail in details">{{ detail }}</li>
+    </ul>
+  `,
+  data() {
+    return {};
+  },
+  methods: {},
+  computed: {},
 });
 
 const app = new Vue({

@@ -81,7 +81,7 @@ input {
   margin-bottom: 20px;
 }
 
-div.container {
+div.color-variant-container {
   display: flex;
   gap: 16px;
 }
